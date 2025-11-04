@@ -99,4 +99,3 @@ Foto_Mig_TelegramBot/
 - Сайт: https://fotomig.net
 - Instagram: [ссылка]
 - ВКонтакте: [ссылка]
-
