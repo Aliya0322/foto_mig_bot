@@ -16,7 +16,7 @@ import sqlite3
 
 
 
-from configuration import BOT_TOKEN, API_KEY, MODEL_NAME, ADMIN_ID
+from configuration import BOT_TOKEN, API_KEY, MODEL_NAME, ADMIN_ID, DATABASE_FILE
 
 
 # AI Assistant system prompt
@@ -69,7 +69,7 @@ async def ai_answer(message: list) -> str:
 # Создаем экземпляры бота и диспетчера ,session=session
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher()
-db = Database('foto_mig_bot.db')
+db = Database(DATABASE_FILE)
 
 
 
