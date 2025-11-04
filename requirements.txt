@@ -1,0 +1,4 @@
+aiogram>=3.22.0
+python-dotenv>=1.2.1
+mistralai>=1.9.11
+
