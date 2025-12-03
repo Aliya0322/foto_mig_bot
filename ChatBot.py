@@ -2,7 +2,7 @@ import asyncio
 from aiogram import Dispatcher, F, Bot
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, BotCommand
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -19,13 +19,19 @@ import sqlite3
 from configuration import BOT_TOKEN, API_KEY, MODEL_NAME, ADMIN_ID, DATABASE_FILE
 
 
-# AI Assistant system prompt
-SYSTEM_PROMPT = """
-Ты - Алина, полезный ассистент фотостудии Миг. Отвечай всегда на русском языке.
-Фотостудия Миг - это фотостудия, которая занимается профессиональной фотографией и видеосъемкой спортивных мероприятий.
-Отвечай так, чтобы клиентам было комфортно и понятно.
-Не упоминай, что ты бот, просто отвечай на вопросы.
-"""
+# 1. Функция для чтения промпта
+def load_system_prompt(filename):
+    """Считывает системный промпт из текстового файла."""
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        logging.error(f"Файл промпта не найден: {filename}")
+        return "Ты - полезный ассистент фотостудии Миг." # Запасной (fallback) промпт
+
+
+# 2. Замените старую переменную SYSTEM_PROMPT на вызов функции
+SYSTEM_PROMPT = load_system_prompt('system_prompt.txt')
 
 # Функция для взаимодействия с Mistral AI
 async def get_ai_response(content, prompt):
@@ -110,10 +116,10 @@ async def start_command(message: Message):
             ]
         )
         await message.answer(
-        "✅Ваше сообщение получено✅\n\n"
+        "✅ Ваше сообщение получено ✅\n\n"
         "Пожалуйста, убедитесь, что Вы прислали ТЕКСТОМ фамилию, которая написана на вашей квитанции и не забыли про название турнира 😉\n"
-        "❌Не нужно присылать фотографию квитанции❌\n\n"
-        "‼️‼️Обращаем ваше внимание, что сроки и время отправки указаны внизу на вашей квитанции, пожалуйста, ожидайте ☺️",
+        "❌ Не нужно присылать фотографию квитанции ❌\n\n"
+        "‼️‼️ Обращаем ваше внимание, что сроки и время отправки указаны внизу на вашей квитанции, пожалуйста, ожидайте ☺️",
         reply_markup=inline_keyboard,
     )
 
@@ -123,7 +129,7 @@ async def start_command(message: Message):
 # Обработчик инлайн-кнопки "Хочу получить свой заказ"
 @dp.callback_query(F.data == "send_order_data")
 async def send_order_data_callback(callback: CallbackQuery, state: FSMContext):
-    await state.clear()  # Clear any existing state
+    await state.clear() 
     await state.set_state(OrderStates.waiting_for_name)
     cancel_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -364,6 +370,12 @@ async def handle_ai_message(message: Message, state: FSMContext):
 
 
 async def main():
+    # Устанавливаем меню команд
+    commands = [
+        BotCommand(command="start", description="Перезапустить бот"),
+        BotCommand(command="send_info", description="Получить свой заказ"),
+    ]
+    await bot.set_my_commands(commands)
     print("Бот запущен!")
     await dp.start_polling(bot)
 
